@@ -4,65 +4,83 @@
     <meta charset="UTF-8">
     <title>Феечки СКУФинкс</title>
     <style>
-        body { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: sans-serif; background: #fff176; }
-        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; }
+        body { margin: 0; background: #fff176; font-family: sans-serif; overflow: hidden; }
+        .screen { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* Заголовок с переливом */
-        .title { font-size: 3rem; font-weight: 900; background: linear-gradient(90deg, #2e7d32, #fbc02d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite; }
-        @keyframes shine { to { background-position: 200% center; } }
+        /* Персонаж (тело + голова) */
+        .character-container { position: absolute; bottom: 25%; left: 10%; width: 120px; height: 250px; z-index: 2; }
+        .woman-body { width: 120px; height: 180px; background: blue; border-radius: 50% 50% 20% 20%; position: absolute; bottom: 0; }
+        .woman-head { width: 70px; height: 70px; background: #ffccbc; border-radius: 50%; position: absolute; top: 0; left: 25px; }
 
-        /* Кнопки */
-        button { padding: 15px 40px; margin: 10px; border-radius: 20px; border: none; font-size: 1.2rem; cursor: pointer; color: white; }
-        .btn-play { background: #ba1a1a; }
-        .btn-settings { background: #74777f; }
-
-        /* Игровая зона */
-        .game-view { background: #fff176; width: 100%; height: 100%; position: relative; }
+        /* Диван и пол */
         .floor { position: absolute; bottom: 0; width: 100%; height: 30%; background: #5d4037; }
-        .sofa { position: absolute; bottom: 25%; left: 5%; width: 350px; height: 120px; background: #4e342e; border-radius: 20px; }
-        
-        /* Персонаж */
-        .char-body { position: absolute; bottom: 35%; left: 15%; width: 120px; height: 180px; background: blue; border-radius: 50% 50% 20% 20%; z-index: 2; }
-        .char-head { position: absolute; bottom: 65%; left: 18%; width: 70px; height: 70px; background: #ffccbc; border-radius: 50%; z-index: 3; }
-        
+        .sofa { position: absolute; bottom: 20%; left: 5%; width: 300px; height: 100px; background: #4e342e; border-radius: 20px; z-index: 1; }
+
         /* Пиво */
-        #beer-img { position: absolute; bottom: 40%; left: 25%; width: 120px; height: auto; z-index: 4; transition: height 0.3s; }
+        #beer-img { position: absolute; bottom: 35%; left: 18%; width: 60px; height: auto; z-index: 3; transition: all 0.2s; }
     </style>
 </head>
 <body>
 
 <div id="menu" class="screen active">
-    <div class="title">Феечки СКУФинкс</div>
-    <button class="btn-play" onclick="showGame()">Играть</button>
-    <button class="btn-settings" onclick="alert('Литры: 1-20L')">Настройки</button>
+    <h1>Феечки СКУФинкс</h1>
+    <button onclick="startGame()">Играть</button>
+    <button onclick="showScreen('settings')">Настройки</button>
+</div>
+
+<div id="settings" class="screen">
+    <h2>Настройки</h2>
+    <label>Литровка (1-20L): <span id="l-val">5</span></label>
+    <input type="range" id="l-range" min="1" max="20" value="5" oninput="document.getElementById('l-val').innerText=this.value">
+    <br>
+    <label>Платье: </label>
+    <select id="color-select">
+        <option value="blue">Синий</option>
+        <option value="red">Красный</option>
+        <option value="green">Зеленый</option>
+    </select>
+    <button onclick="showScreen('menu')">Назад</button>
 </div>
 
 <div id="game" class="screen">
-    <button style="position:absolute; top:10px; left:10px; z-index:10;" onclick="location.reload()">Меню</button>
-    <div class="game-view">
-        <div class="floor"></div>
-        <div class="sofa"></div>
-        <div class="char-body"></div>
-        <div class="char-head"></div>
-        <img id="beer-img" src="i (9).jpeg" alt="пиво">
+    <button style="position:absolute; top:10px; right:10px;" onclick="location.reload()">Меню</button>
+    <div class="floor"></div>
+    <div class="sofa"></div>
+    <div class="character-container">
+        <div class="woman-head"></div>
+        <div class="woman-body" id="body-color"></div>
     </div>
+    <img id="beer-img" src="i (9).jpeg">
 </div>
 
 <script>
-    function showGame() {
-        document.getElementById('menu').classList.remove('active');
-        document.getElementById('game').classList.add('active');
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        showScreen('game');
+        const l = document.getElementById('l-range').value;
+        const color = document.getElementById('color-select').value;
         
+        document.getElementById('body-color').style.backgroundColor = color;
         const img = document.getElementById('beer-img');
-        let h = 200;
         
-        setInterval(() => {
-            if(h > 0) {
-                h -= 2;
-                img.style.height = h + "px";
+        // Масштабируем бутылку от литража
+        img.style.width = (30 + (l * 3)) + "px";
+        
+        let h = 100;
+        let timer = setInterval(() => {
+            h -= (10 / l); // Скорость зависит от литража
+            img.style.opacity = h / 100;
+            if (h <= 0) {
+                clearInterval(timer);
+                img.style.display = 'none';
+                setTimeout(() => { alert("Восполняем запасы"); location.reload(); }, 1000);
             }
-        }, 200);
+        }, 500);
     }
 </script>
 </body>
