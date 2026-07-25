@@ -1,82 +1,76 @@
-<!DOCTYPE html>
-<html lang="ru" id="app-root">
+here<!DOCTYPE html>
+<html lang="ru" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Феечки СКУФинкс</title>
     <style>
-        :root { --primary: #BA1A1A; --surface-variant: #E1E2EC; --on-surface: #1C1B1F; }
-        body { margin: 0; padding: 0; background: #FFF176; font-family: sans-serif; overflow: hidden; height: 100vh; }
+        body { margin: 0; background: #FFF176; font-family: sans-serif; height: 100vh; overflow: hidden; }
         .screen { display: none; height: 100%; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* Стиль кнопок */
-        button { width: 220px; padding: 15px; margin: 8px; border-radius: 20px; border: none; font-size: 1rem; cursor: pointer; background: var(--primary); color: white; font-weight: bold; }
+        /* Кнопки */
+        button { width: 200px; padding: 15px; margin: 10px; border-radius: 20px; border: none; font-size: 1rem; cursor: pointer; background: #BA1A1A; color: white; font-weight: bold; }
         
-        /* Скроллбар (Material 3 style) */
-        input[type=range] { -webkit-appearance: none; width: 220px; height: 4px; background: var(--surface-variant); border-radius: 2px; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--primary); border-radius: 50%; cursor: pointer; }
+        /* Скроллбар */
+        input[type=range] { width: 200px; accent-color: #BA1A1A; }
 
-        /* Игровая сцена */
+        /* Сцена */
         .stage { position: relative; width: 100%; height: 100%; }
-        .sofa { position: absolute; bottom: 15%; left: 5%; width: 350px; height: 100px; background: #5D4037; border-radius: 20px; }
-        .char-container { position: absolute; bottom: 25%; left: 10%; width: 120px; height: 250px; }
-        .body { width: 120px; height: 180px; border-radius: 50% 50% 20% 20%; position: absolute; bottom: 0; transition: background 0.3s; }
+        .sofa { position: absolute; bottom: 10%; left: 5%; width: 350px; height: 100px; background: #5D4037; border-radius: 20px; z-index: 1; }
+        .char-box { position: absolute; bottom: 15%; left: 10%; width: 120px; height: 250px; z-index: 2; }
+        .body { width: 120px; height: 180px; background: blue; border-radius: 50% 50% 20% 20%; position: absolute; bottom: 0; transition: background 0.3s; }
         .head { width: 70px; height: 70px; background: #FFCCBC; border-radius: 50%; position: absolute; top: 0; left: 25px; }
-        #beer-img { position: absolute; bottom: 42%; left: 18%; width: 80px; height: auto; z-index: 5; }
+        
+        /* Бутылка - позиционирована относительно персонажа */
+        #beer-img { position: absolute; bottom: 150px; left: 80px; width: 60px; height: auto; z-index: 3; }
     </style>
 </head>
 <body>
 
 <!-- МЕНЮ -->
 <div id="menu" class="screen active">
-    <h1 id="title-text">Феечки СКУФинкс</h1>
-    <button onclick="showScreen('game')">Играть</button>
-    <button onclick="showScreen('settings')">Настройки</button>
+    <h1 id="t-title">Феечки СКУФинкс</h1>
+    <button onclick="showScreen('game')" id="t-play">Играть</button>
+    <button onclick="showScreen('settings')" id="t-sett">Настройки</button>
 </div>
 
 <!-- НАСТРОЙКИ -->
 <div id="settings" class="screen">
-    <h2 id="st-text">Настройки</h2>
-    <label>Литровка: <span id="l-val">5</span>L</label>
-    <input type="range" id="l-range" min="1" max="20" value="5" oninput="document.getElementById('l-val').innerText=this.value">
+    <h2 id="t-sett2">Настройки</h2>
+    <label id="t-liters">Литровка: <span id="l-val">5</span>L</label>
+    <input type="range" id="l-range" min="1" max="20" value="5" oninput="document.getElementById('l-val').innerText=this.value; updateBottle()">
     <br>
-    <label>Цвет платья:</label>
-    <input type="color" id="color-picker" value="#0000FF" onchange="updateDress(this.value)">
+    <label id="t-color">Цвет платья:</label>
+    <input type="color" value="#0000FF" onchange="document.getElementById('dress-body').style.background = this.value">
     <br>
-    <button onclick="toggleLang()">Язык: RU/EN</button>
-    <button onclick="showScreen('menu')">Назад</button>
+    <button onclick="toggleLang()" id="t-lang">Язык: RU/EN</button>
+    <button onclick="showScreen('menu')" id="t-back">Назад</button>
 </div>
 
 <!-- ИГРА -->
 <div id="game" class="screen">
-    <button style="width: 100px; position:absolute; top:20px; left:20px;" onclick="location.reload()">Меню</button>
+    <button style="position:absolute; top:20px; left:20px; width: 100px;" onclick="location.reload()">Меню</button>
     <div class="stage">
         <div class="sofa"></div>
-        <div class="char-container">
+        <div class="char-box">
             <div class="head"></div>
-            <div class="body" id="dress-color" style="background: blue;"></div>
+            <div class="body" id="dress-body"></div>
+            <img id="beer-img" src="1.jpeg" alt="пиво">
         </div>
-        <img id="beer-img" src="1.jpeg" alt="пиво">
     </div>
 </div>
 
 <script>
     const tr = {
-        ru: { title: "Феечки СКУФинкс", play: "Играть", settings: "Настройки", back: "Назад", ltrs: "Литровка" },
-        en: { title: "Skufinks Fairies", play: "Play", settings: "Settings", back: "Back", ltrs: "Litres" }
+        ru: { title: "Феечки СКУФинкс", play: "Играть", sett: "Настройки", liters: "Литровка", color: "Цвет платья", lang: "Язык: RU/EN", back: "Назад" },
+        en: { title: "Skufinks Fairies", play: "Play", sett: "Settings", liters: "Litres", color: "Dress Color", lang: "Lang: RU/EN", back: "Back" }
     };
     let lang = 'ru';
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        // Обновляем бутылку при входе в игру
-        if(id === 'game') updateBottle();
-    }
-
-    function updateDress(color) {
-        document.getElementById('dress-color').style.background = color;
     }
 
     function updateBottle() {
@@ -89,11 +83,14 @@
 
     function toggleLang() {
         lang = lang === 'ru' ? 'en' : 'ru';
-        document.getElementById('app-root').lang = lang;
-        document.getElementById('title-text').innerText = tr[lang].title;
-        document.querySelector('button[onclick="showScreen(\'game\')"]').innerText = tr[lang].play;
-        document.querySelector('button[onclick="showScreen(\'settings\')"]').innerText = tr[lang].settings;
-        document.getElementById('st-text').innerText = tr[lang].settings;
+        document.getElementById('t-title').innerText = tr[lang].title;
+        document.getElementById('t-play').innerText = tr[lang].play;
+        document.getElementById('t-sett').innerText = tr[lang].sett;
+        document.getElementById('t-sett2').innerText = tr[lang].sett;
+        document.getElementById('t-liters').firstChild.textContent = tr[lang].liters + ": ";
+        document.getElementById('t-color').innerText = tr[lang].color;
+        document.getElementById('t-lang').innerText = tr[lang].lang;
+        document.getElementById('t-back').innerText = tr[lang].back;
     }
 </script>
 </body>
